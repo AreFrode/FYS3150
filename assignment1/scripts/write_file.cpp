@@ -3,7 +3,6 @@
 #include <string>
 #include <iomanip>
 #include <cmath>
-#include <ctime>
 
 #include "functions.hpp"
 
@@ -16,7 +15,7 @@ int main(int argc, char *argv[]) {
     string filename;
     if (argc <= 1) {
         cout << "Missing command line argument!" << endl;
-        cout << "Usage: " << argv[0] << " n\nn is the power in 10^n" << endl;
+        cout << "Usage: " << argv[0] << " filename n\nn is the power in 10^n" << endl;
         exit(1);
     } else {
         filename = argv[1];
@@ -42,12 +41,6 @@ int main(int argc, char *argv[]) {
     }
 
     GeneralSolver(a, b, c, v, solution, n);
-
-
-    // time_t end, start = clock();
-    // GeneralSolver(a, b, c, v, solution, n);
-    // end = clock();
-    // cout << "Running solver with " << n << "x" << n << " grid points took " << (double)1000*(end - start)/CLOCKS_PER_SEC << "ms" << endl;
 
     ofile.open(filename);
     ofile << setiosflags(ios::showpoint | ios::uppercase);

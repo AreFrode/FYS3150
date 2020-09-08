@@ -42,17 +42,17 @@ def plotter(infile: str, exponent: int, read_u: bool = False) -> None:
     if read_u:
         plt.plot(x, u, label=f"analytical, n = {n}")
 
+if __name__ == "__main__":
+    try:
+        plotter(open(sys.argv[1], "r"), int(sys.argv[4]))
+        plotter(open(sys.argv[2], "r"), int(sys.argv[4]) + 1)
+        plotter(open(sys.argv[3], "r"), int(sys.argv[4]) + 2, read_u=True)
 
-try:
-    plotter(open(sys.argv[1], "r"), int(sys.argv[4]))
-    plotter(open(sys.argv[2], "r"), int(sys.argv[4]) + 1)
-    plotter(open(sys.argv[3], "r"), int(sys.argv[4]) + 2, read_u=True)
+        plt.legend()
+        plt.xlabel("x")
+        plt.ylabel("v(x)")
+        plt.savefig("../comparison.png")
 
-    plt.legend()
-    plt.xlabel("x")
-    plt.ylabel("v(x)")
-    plt.savefig("../comparison.png")
-
-except IndexError as e:
-    print("Wrong usage of program, no file was given as command line argument\n\
-          usage: ./plotter infile1.ext infile2.ext infile3.ext exponent")
+    except IndexError as e:
+        print("Wrong usage of program, no file was given as command line argument\n\
+            usage: ./plotter infile1.ext infile2.ext infile3.ext exponent")
