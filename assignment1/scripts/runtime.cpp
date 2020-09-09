@@ -33,13 +33,13 @@ int main(int argc, char *argv[]) {
 
     while (exponent < range) {
         double h = 1./(n + 1.);
-        double *c = InitArray(-1., n-1);
-        double *a = InitArray(-1., n-1);
-        double *b = InitArray(2., n);
-        double *v1 = InitArray(0., n);
-        double *v2 = InitArray(0., n);
-        double *solution = InitArray(0., n);
-        double *x = InitArray(0., n);
+        double *c = FillArray(-1., n-1);
+        double *a = FillArray(-1., n-1);
+        double *b = FillArray(2., n);
+        double *v1 = FillArray(0., n);
+        double *v2 = FillArray(0., n);
+        double *solution = FillArray(0., n);
+        double *x = FillArray(0., n);
 
         double xval = h;
         for (int i = 0; i < n; i++) {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
             end1 = clock();
             mean1 += (double)(end1 - start1)/CLOCKS_PER_SEC;
             start2 = clock();
-            SpecializedSolver(a, b, c, v2, solution, n);
+            SpecializedSolver(a[0], b[0], c[0], v2, solution, n);
             end2 = clock();
             mean2 += (double)(end2 - start2)/CLOCKS_PER_SEC;
         }
@@ -67,9 +67,6 @@ int main(int argc, char *argv[]) {
         ofile << setw(5) << setprecision(5) << "10e" << exponent << ",";
         ofile << setw(5) << setprecision(5) << 1000*mean1 << ",";
         ofile << setw(5) << setprecision(5) << 1000*mean2 << endl;
-        //cout << "Running General solver with 10^" << exponent << "x10^" << exponent << " grid points, mean time from " << loop << " loops: " << 1000*mean1 << "ms" << endl;
-        //cout << "Running Specialized solver with 10^" << exponent << "x10^" << exponent << " grid points, mean time from " << loop << " loops. " << 1000*mean2 << "ms" << endl;
-
 
         delete [] c;
         delete [] a;

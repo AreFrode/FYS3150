@@ -26,12 +26,12 @@ int main(int argc, char *argv[]) {
 
     int n = pow(10., exponent);
     double h = 1./(n + 1.);
-    double *c = InitArray(-1., n-1);
-    double *a = InitArray(-1., n-1);
-    double *b = InitArray(2., n);
-    double *v = InitArray(0., n);
-    double *solution = InitArray(0., n);
-    double *x = InitArray(0., n);
+    double *c = FillArray(-1., n-1);
+    double *a = FillArray(-1., n-1);
+    double *b = FillArray(2., n);
+    double *v = FillArray(0., n);
+    double *solution = FillArray(0., n);
+    double *x = FillArray(0., n);
 
     double xval = h;
     for (int i = 0; i < n; i++) {
