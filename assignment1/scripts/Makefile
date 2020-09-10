@@ -4,11 +4,11 @@ FLAGS = -O3
 PROGRAMS := write error table_gen_spec lu_decomposition
 DEP = functions.hpp lib.hpp
 
+.PHONY : all clean
+
 all : $(PROGRAMS)
 
 create_png : write topng
-
-.PHONY : all clean
 
 write:
 	$(CC) -o write_to_file.out write_file.cpp functions.cpp $(FLAGS)
@@ -26,6 +26,11 @@ table_gen_spec:
 
 lu_decomposition:
 	$(CC) -o lu.out lu_compare.cpp lib.cpp functions.cpp $(FLAGS)
+
+test:
+	$(CC) -o test.out tests/test_functions.cpp functions.cpp
+	./test.out
+	rm -f test.out
 
 clean:
 	rm -f *.out $(PROGRAMS)

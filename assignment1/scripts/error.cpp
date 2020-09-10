@@ -9,7 +9,6 @@
 using namespace std;
 
 ofstream ofile;
-ofstream results;
 
 int main(int argc, char *argv[]) {
     string filename = "../results/error.csv";
@@ -39,7 +38,7 @@ int main(int argc, char *argv[]) {
             xval += h;
         }
 
-        SpecializedSolver(a, b, c, v, solution, n);
+        SpecializedTridiagSolver(a, b, c, v, solution, n);
         double relative_error = MaxError(v, u_vector, n);
 
         ofile << setw(5) << setprecision(1) << scientific << 1./n << ",";

@@ -1,7 +1,8 @@
-#include "functions.hpp"
 #include <cmath>
 
-void GeneralSolver(double *a, double *b, double *c, double *v, double *sol, int n) {
+#include "functions.hpp"
+
+void GeneralTridiagSolver(double *a, double *b, double *c, double *v, double *sol, int n) {
     /**
     * Solves a system with a general tridiagonal matrix
     *
@@ -33,7 +34,7 @@ void GeneralSolver(double *a, double *b, double *c, double *v, double *sol, int 
     delete [] temp;
 }
 
-void SpecializedSolver(double a, double b, double c, double *v, double *sol, int n) {
+void SpecializedTridiagSolver(double a, double b, double c, double *v, double *sol, int n) {
     /**
     * Solves a specialized system where the diagonal elements are equal (but different bewteen diags)
     *

@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
         xval += h;
     }
 
-    GeneralSolver(a, b, c, v, solution, n);
+    GeneralTridiagSolver(a, b, c, v, solution, n);
 
     ofile.open(filename);
     ofile << setiosflags(ios::showpoint | ios::uppercase);

@@ -53,11 +53,11 @@ int main(int argc, char *argv[]) {
 
         for (int i = 0; i < loop; i++) {
             start1 = clock();
-            GeneralSolver(a, b, c, v1, solution, n);
+            GeneralTridiagSolver(a, b, c, v1, solution, n);
             end1 = clock();
             mean1 += (double)(end1 - start1)/CLOCKS_PER_SEC;
             start2 = clock();
-            SpecializedSolver(a[0], b[0], c[0], v2, solution, n);
+            SpecializedTridiagSolver(a[0], b[0], c[0], v2, solution, n);
             end2 = clock();
             mean2 += (double)(end2 - start2)/CLOCKS_PER_SEC;
         }
