@@ -2,31 +2,31 @@
 
 void JacobiSolver::init(int N, double diag, double nondiag) {
     initialize(N, diag, nondiag);
-    m_eigmat = zeros<mat>(m_N,m_N);
-    for (int i = 0; i < m_N; i++)
-        for (int j = 0; j < m_N; j++)
-            if (i == j)
-                m_eigmat(i,j) = 1.0;
 }
 
-void JacobiSolver::solve() {
+int JacobiSolver::solve() {
     int k, l, counter = 0;
     double tol = 1.0e-8;
     double iterations = (double) m_N * (double) m_N * (double) m_N;
     double max_offdiag = maxoffdiag(&k, &l);
+
     while (fabs(max_offdiag) > tol && (double) counter < iterations) {
-        rotate(k, l);
         max_offdiag = maxoffdiag(&k, &l);
+        rotate(k, l);
         counter++;
     }
+
+    return counter;
 }
 
-void JacobiSolver::print_eigvec() {
+void JacobiSolver::write_to_file(string fname) {
+    vec x = linspace(m_h, 1-m_h, m_N);
     int low_idx = findlowesteigval();
-    cout << "[ ";
-    for (int i = 0; i < m_N; i++)
-        cout << m_eigmat(low_idx, i) << ", ";
-    cout << "]" << endl;
+    m_ofile.open(fname);
+    for (int i = 0; i < m_N; i++) {
+        m_ofile << x(i) << " " << m_eigmat(i, low_idx) << endl;
+    }
+    m_ofile.close();
 }
 
 int JacobiSolver::findlowesteigval() {
@@ -47,8 +47,8 @@ double JacobiSolver::maxoffdiag(int *k, int *l) {
         for (int j = i+1; j < m_N; j++) {
             if (fabs(m_Toeplitz(i,j)) > max) {
                 max = fabs(m_Toeplitz(i,j));
-                *k = i;  // SWAPPED INDICES k AND l, MIGHT BE WRONG
-                *l = j;  //
+                *k = i;
+                *l = j;
             }
         }
     }

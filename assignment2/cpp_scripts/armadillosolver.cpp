@@ -8,7 +8,8 @@ void ArmadilloSolver::init(int N, double diag, double nondiag) {
 }
 
 void ArmadilloSolver::solve() {
-    eig_sym(m_eigval, m_Toeplitz);
+    eig_sym(m_eigval, m_eigmat, m_Toeplitz);
+    /*
     double pi = acos(-1.0);
     cout << "RESULTS: " << endl;
     cout << setiosflags(ios::showpoint | ios::uppercase);
@@ -18,4 +19,14 @@ void ArmadilloSolver::solve() {
         double exact = m_diag + 2*m_nondiag*cos((i+1)*pi/(m_N+1));
         cout << m_eigval[i] << ", " << exact << endl;
     }
+    */
+}
+
+void ArmadilloSolver::write_to_file(string fname) {
+    vec x = linspace(m_h, 1-m_h, m_N);
+    m_ofile.open(fname);
+    for (int i = 0; i < m_N; i++) {
+        m_ofile << x(i) << " " << m_eigmat(i, 0) << endl;
+    }
+    m_ofile.close();
 }

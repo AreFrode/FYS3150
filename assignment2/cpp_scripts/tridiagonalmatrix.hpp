@@ -11,7 +11,7 @@ class TridiagonalMatrix {
 protected:
     int m_N;
     double m_h, m_diag, m_nondiag;
-    mat m_Toeplitz;
+    mat m_Toeplitz, m_eigmat;
     ofstream m_ofile;
 
     void print(mat matrix);
@@ -27,11 +27,11 @@ private:
 public:
     void init(int N, double diag, double nondiag);
     void solve();
+    void write_to_file(string fname);
 };
 
 class JacobiSolver : public TridiagonalMatrix {
 private:
-    mat m_eigmat;
 
     double maxoffdiag(int *k, int *l);
     void rotate(int k, int l);
@@ -39,8 +39,8 @@ private:
 
 public:
     void init(int N, double diag, double nondiag);
-    void solve();
-    void print_eigvec();
+    int solve();
+    void write_to_file(string fname);
     double unittest_maxoffdiag();
     void print_eigvals();
     void print_toeplitz();
