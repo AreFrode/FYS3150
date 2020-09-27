@@ -4,7 +4,7 @@ import os
 import sys
 
 N = input("Number of mesh points: ")
-algo = input("Choice of algorithm - jacobi/arma: ")
+algo = input("Choose a program - jacobi/arma/analytical/jacobi-arma/quantum: ")
 
 filename_plot = "_".join([algo, "solution", N]) + ".pdf"
 filename_data = "_".join([algo, "N", N]) + ".txt"

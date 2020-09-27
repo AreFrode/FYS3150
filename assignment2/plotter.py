@@ -11,6 +11,7 @@ rho = [0]
 u = [0]
 
 with open(ifile, "r") as infile:
+    infile.readline()
     lines = infile.readlines()
     for line in lines:
         vals = line.split()

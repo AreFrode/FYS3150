@@ -1,9 +1,38 @@
+/**
+* jacobisolver.cpp: implementation file for JacobiSolver
+*
+* Author: Are Frode Kvanum
+*
+* Completion Date: 26.09.2020
+*/
+
+#include <iomanip>
+
 #include "tridiagonalmatrix.hpp"
 
-void JacobiSolver::init(int N, double diag, double nondiag) {
-    initialize(N, diag, nondiag);
+// CONSTRUCTOR
+
+/**
+* Default constructor
+* wrapper for calling on parent-constructor in TridiagonalMatrix
+*
+* @param N Dimensionality (NxN) of matrix to be constructed
+* @param diag Diagonal element of the matrix
+* @param nondiag Nondiagonal element of the matrix (symmetric)
+* @param rho_max (default = 1.0) maximum length of the system
+*/
+void JacobiSolver::init(int N, double diag, double nondiag, double rho_max) {
+    initialize(N, diag, nondiag, rho_max);
 }
 
+// PUBLIC MEMBER FUNCTIONS
+
+/**
+* solve: performs the Jacobi rotation algorithm to reduce all diagonal elements
+*        to eigenvalues and nondiagonal elements close to 0
+*
+* @return Number of iterations(rotations) performed
+*/
 int JacobiSolver::solve() {
     int k, l, counter = 0;
     double tol = 1.0e-8;
@@ -19,17 +48,30 @@ int JacobiSolver::solve() {
     return counter;
 }
 
-void JacobiSolver::write_to_file(string fname) {
-    vec x = linspace(m_h, 1-m_h, m_N);
-    int low_idx = findlowesteigval();
+/**
+* write_to_file: writes results to output file
+*
+* @param fname /path/to/file
+* @param transform Number of rotations performed
+* @return Nothing is returned, as this function writes to file
+*/
+void JacobiSolver::write_to_file(string fname, int transform) {
+    int low_idx = find_lowest_eigval();
     m_ofile.open(fname);
+    m_ofile << "N.O. transformations: " << transform << endl;
     for (int i = 0; i < m_N; i++) {
-        m_ofile << x(i) << " " << m_eigmat(i, low_idx) << endl;
+        m_ofile << m_x(i) << " " << m_eigmat(i, low_idx) << endl;
     }
     m_ofile.close();
 }
 
-int JacobiSolver::findlowesteigval() {
+/**
+* find_lowest_eigval: Searches through the reduced tridiagonal matrix
+*                     to find the lowest eigenvalue
+*
+* @return Index whre the lowest eigenvalue is located
+*/
+int JacobiSolver::find_lowest_eigval() {
     int idx = 0;
     double min = m_Toeplitz(0,0);
     for (int i = 1; i < m_N; i++) {
@@ -41,6 +83,59 @@ int JacobiSolver::findlowesteigval() {
     return idx;
 }
 
+/**
+* print_eigvals: prints the diagonal elements of the tridiagonal matrix
+*                USED FOR PRINTING SELECTED RESULTS
+*
+* @return Nothing is returned
+*/
+void JacobiSolver::print_eigvals() {
+    vec computed = zeros<vec>(m_N);
+    for (int i = 0; i < m_N; i++)
+        computed(i) = m_Toeplitz(i,i);
+
+    uvec indices = sort_index(computed);
+    for (int i = 0; i < 4; i++)
+        cout << setw(15) << setprecision(8) << computed(indices(i)) << endl;
+}
+
+/**
+* print_toeplitz: prints the entire tridiagonal toeplitz matrix
+*                 USED FOR PRINTING SELECTED RESULTS
+*
+* return Nothing is returned
+*/
+void JacobiSolver::print_toeplitz() {
+    to_string(m_Toeplitz);
+}
+
+/**
+* unittest_maxoffdiag: used for testing private function maxoffdiag
+*                      USED FOR UNITTESTS ONLY
+*
+* @return computed result of maxoffdiag
+*/
+double JacobiSolver::unittest_maxoffdiag() {
+    m_N = 5;
+    int k, l;
+    m_Toeplitz = zeros<mat>(m_N,m_N);
+    for (int i = 0; i < m_N; i++) {
+        for (int j = i; j < m_N; j++) {
+            m_Toeplitz(i,j) = i*j;
+        }
+    }
+    return maxoffdiag(&k, &l);
+}
+
+// PRIVATE MEMBER FUNCTIONS
+
+/**
+* maxoffdiag: finds the maximum nondiagonal element in a symmetric matrix
+*
+* @param k pointer to index k
+* @param l pointer to index l
+* @return maximum nondiagonal element in the matrix
+*/
 double JacobiSolver::maxoffdiag(int *k, int *l) {
     double max = 0.0;
     for (int i = 0; i < m_N; i++) {
@@ -56,6 +151,13 @@ double JacobiSolver::maxoffdiag(int *k, int *l) {
     return max;
 }
 
+/**
+* rotate: performs a single Jacobi rotation
+*
+* @param k the k'th index of the highest nondiagonal element in a tridiagonal matrix
+* @param l the l'th index of the highest nondiagonal element in a tridiagonal matrix
+* @return Nothing is returned, m_Toeplitz is reduced and the eigenvectors are recomputed
+*/
 void JacobiSolver::rotate(int k, int l) {
     double s, c, a_kk, a_ll, a_ik, a_il, r_ik, r_il;
     if (m_Toeplitz(k,l) != 0.0) {
@@ -98,25 +200,3 @@ void JacobiSolver::rotate(int k, int l) {
     }
 }
 
-double JacobiSolver::unittest_maxoffdiag() {
-    m_N = 5;
-    int k, l;
-    m_Toeplitz = zeros<mat>(m_N,m_N);
-    for (int i = 0; i < m_N; i++) {
-        for (int j = i; j < m_N; j++) {
-            m_Toeplitz(i,j) = i*j;
-        }
-    }
-    return maxoffdiag(&k, &l);
-}
-
-void JacobiSolver::print_eigvals() {
-    cout << "[";
-    for (int i = 0; i < m_N; i++)
-        cout << m_Toeplitz(i,i) << ", ";
-    cout << "]" << endl;
-}
-
-void JacobiSolver::print_toeplitz() {
-    print(m_Toeplitz);
-}
