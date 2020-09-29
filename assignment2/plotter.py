@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
-import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import sys
+
+matplotlib.rcParams['text.usetex'] = True
 
 outfile = sys.argv[1]
 ifile = sys.argv[2]
@@ -22,7 +24,7 @@ rho.append(1)
 u.append(0)
 
 plt.plot(rho, u, label=ifile.split("/")[2])
-plt.xlabel("rho")
-plt.ylabel("u(rho)")
+plt.xlabel(r"$\rho$")
+plt.ylabel(r"u($\rho$)")
 plt.legend()
 plt.savefig(outfile)

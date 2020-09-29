@@ -3,12 +3,13 @@
 *
 * Author: Are Frode Kvanum
 *
-* Completion Date: 26.09.2020
+* Completion Date: 29.09.2020
 */
 
 #include <iomanip>
 
 #include "tridiagonalmatrix.hpp"
+
 
 // CONSTRUCTOR
 
@@ -63,6 +64,30 @@ void JacobiSolver::write_to_file(string fname, int transform) {
         m_ofile << m_x(i) << " " << m_eigmat(i, low_idx) << endl;
     }
     m_ofile.close();
+}
+
+/**
+* write_to_file_quantum: writes results from one-electron case to file
+*
+* @param fname /path/to/file
+* @param transfrom Number of rotations performed
+* @param eig whch eigenvalue to plot
+* @return Nothing is returned, as this function writes to file
+*/
+void JacobiSolver::write_to_file_quantum(string fname, int transform, int eig) {
+    vec computed = zeros<vec>(m_N);
+    for (int i = 0; i < m_N; i++)
+        computed(i) = m_Toeplitz(i,i);
+
+    uvec indices = sort_index(computed);
+    fname += "_lambda_" + std::to_string(eig) + ".txt";
+    m_ofile.open(fname);
+    m_ofile << "N.O. transformations: " << transform << endl;
+    for (int i = 0; i < m_N; i++) {
+        m_ofile << m_x(i) << " " << m_eigmat(i, indices(i)) << endl;
+    }
+    m_ofile.close();
+
 }
 
 /**

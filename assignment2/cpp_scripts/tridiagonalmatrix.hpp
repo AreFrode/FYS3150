@@ -3,7 +3,7 @@
 *
 * Author: Are Frode Kvanum
 *
-* Completion Date: 26.09.2020
+* Completion Date: 28.09.2020
 */
 
 #ifndef TridiagonalMatrix_hpp
@@ -28,6 +28,7 @@ protected:
 public:
     void initialize(int N, double diag, double nondiag, double rho_max = 1.0);
     void add_harmonic_potential();
+    void add_harmonic_potential_two_electrons(double omega);
     double get_x(int i);
     int get_N();
     double get_h();
@@ -45,6 +46,7 @@ public:
     void init(int N, double diag, double nondiag, double rho_max = 1.0);
     int solve();
     void write_to_file(string fname, int transform);
+    void write_to_file_quantum(string fname, int transform, int eig);
     int find_lowest_eigval();
     void print_eigvals();
     void print_toeplitz();

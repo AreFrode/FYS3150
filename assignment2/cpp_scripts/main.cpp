@@ -57,12 +57,27 @@ int main(int argc, char *argv[]) {
             ofile << my_solver.get_x(i) << " " << abs(my_solver.get_eigmat(i, low_idx) - arma_solver.get_eigmat(i, 0)) << endl;
         }
         ofile.close();
-    } else if (algo == "quantum") {
+    } else if (algo == "one-electron") {
         JacobiSolver my_solver;
         my_solver.init(N, 2., -1., 5.0);
         my_solver.add_harmonic_potential();
-        my_solver.solve();
+        int rot = my_solver.solve();
+        for (int i = 0; i < 4; i++) {
+            fname = algo + "_N_" + to_string(N);
+            my_solver.write_to_file_quantum(fname, rot, i);
+        }
         my_solver.print_eigvals();
+    } else if (algo == "two-electrons") {
+        vec omega = {0.01, 0.5, 1., 5.};
+        for (double i : omega) {
+            JacobiSolver my_solver;
+            fname = algo + "_N_" + to_string(N) + "_omega_" + to_string(i) + ".txt";
+            my_solver.init(N, 2. , -1., 5.0);
+            my_solver.add_harmonic_potential_two_electrons(i);
+            int rot = my_solver.solve();
+            my_solver.write_to_file(fname, rot);
+        }
+
     }
 
     return 0;

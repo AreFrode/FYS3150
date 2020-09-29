@@ -56,7 +56,21 @@ void TridiagonalMatrix::initialize(int N, double diag, double nondiag, double rh
 */
 void TridiagonalMatrix::add_harmonic_potential() {
     for (int i = 0; i < m_N; i++)
-        m_Toeplitz(i,i) = m_diag + (m_x(i)*m_x(i));
+        m_Toeplitz(i,i) += (m_x(i)*m_x(i));
+}
+
+/**
+* add_harmonic_potential_two_electrons: add the potential for a case
+*                                       of two electrons to the
+*                                       diagonal elements
+*
+* @param omega frequency parameter
+* @return Nothing is returned, m_Toeplitz is modified
+*/
+void TridiagonalMatrix::add_harmonic_potential_two_electrons(double omega) {
+    for (int i = 0; i < m_N; i++) {
+        m_Toeplitz(i,i) += (omega*omega)*(m_x(i)*m_x(i)) + 1./m_x(i);
+    }
 }
 
 /**
