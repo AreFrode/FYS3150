@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
         double pi = acos(-1.0);
         ofile.open(fname);
         ofile << "Analytcial solution" << endl;
-        for (int i = 1; i <= N; i++) {
-            ofile << x(i-1) << " " << sin((i*1.*pi)/(N+1)) << endl;
+        for (int i = 0; i < N; i++) {
+            ofile << x(i) << " " << sin(((i+1)*1.*pi)/(N+1)) << endl;
         }
         ofile.close();
     } else if (algo == "jacobi-arma") {
@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
             my_solver.init(N, 2. , -1., 5.0);
             my_solver.add_harmonic_potential_two_electrons(i);
             int rot = my_solver.solve();
+            my_solver.print_eigvals();
             my_solver.write_to_file(fname, rot);
         }
 
