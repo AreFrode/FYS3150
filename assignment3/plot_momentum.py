@@ -14,9 +14,9 @@ outfile: str = sys.argv[1]
 ifile: str = sys.argv[2:]
 
 for file in ifile:
-    kin = []
-    pot = []
-    tot = []
+    momx = []
+    momy = []
+    momz = []
     t = []
     with open(file, "r") as infile:
         lines = infile.readlines()
@@ -24,16 +24,15 @@ for file in ifile:
             line: str = line.split()
             if int(line[1]) == 0:
                 t.append(float(line[0]))
-                kin.append(float(line[-3]))
-                pot.append(float(line[-2]))
-                tot.append(float(line[-1]))
+                momx.append(float(line[-3]))
+                momy.append(float(line[-2]))
+                momz.append(float(line[-1]))
 
-
-plt.plot(t, kin, label="Kinetic Energy Earth")
-plt.plot(t, pot, label="Potential Energy Earth")
-plt.plot(t, tot, label="Total Energy Earth")
+plt.plot(t, momx, color='m', label="Angular momentum x-direction Earth")
+plt.plot(t, momy, color='c', label="Angular momentum y-direction Earth")
+plt.plot(t, momz, color='r', label="Angular momentum z-direction Earth")
 plt.xlabel("t [Yrs]")
-plt.ylabel("E [J]")
+plt.ylabel(r"L [$\frac{kgm^2}{s}$]")
 plt.legend()
 plt.tight_layout()
 plt.savefig(outfile)

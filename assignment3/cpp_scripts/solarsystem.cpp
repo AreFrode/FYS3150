@@ -3,8 +3,10 @@
 *
 * Author: Are Frode Kvanum
 *
-* Completion date: 22.10.2020
+* Completion date: 25.10.2020
 */
+#include <ctime>
+
 #include <iostream>
 #include "solarsystem.hpp"
 
@@ -40,17 +42,20 @@ SolarSystem::SolarSystem(std::vector<Planet> planets, int dimension, std::string
 *              (clarification: if less than size of private
 *               variable planets, Planets at index > size
 *               will not be advanced in the simulation)
-* @return nothing is returned
+* @return the total runtime of all advance_fe instances is returned
 */
-void SolarSystem::forwardEuler(int mesh_points, double time, int size) {
+double SolarSystem::forwardEuler(int mesh_points, double time, int size) {
     double step = time /((double) mesh_points);
     double current_time = 0.0;
+    clock_t start, end;
+    double runtime;
 
     std::ofstream output_file(m_fname);
     std::ofstream output_file_E(m_fname_E);
 
     double **a = new_matrix(m_planets.size(), m_dimension);
     double Fx, Fy, Fz;
+    Fx = Fy = Fz = 0.0;
 
     print_pos(output_file, current_time, size);
     print_energy(output_file_E, current_time);
@@ -59,20 +64,10 @@ void SolarSystem::forwardEuler(int mesh_points, double time, int size) {
     while (current_time < time) {
         for (int i = 0; i < size; i++) {
             Planet &current = m_planets[i];
-            Fx = Fy = Fz = 0.0;
-
-            gravitational_force(current, i, Fx, Fy, Fz);
-
-            a[i][0] = Fx / current.get_M();
-            a[i][1] = Fy / current.get_M();
-            a[i][2] = Fz / current.get_M();
-
-            for (int j = 0; j < m_dimension; j++) {
-                double new_pos = current.get_pos(j) + step*current.get_v(j);
-                current.set_pos(j, new_pos);
-                double new_vel = current.get_v(j) + step*a[i][j];
-                current.set_v(j, new_vel);
-            }
+            start = clock();
+            advance_fe(current, i, step, a, Fx, Fy, Fz);
+            end = clock();
+            runtime += (double)(end - start)/((double)CLOCKS_PER_SEC);
         }
 
         print_pos(output_file, current_time, size);
@@ -87,6 +82,8 @@ void SolarSystem::forwardEuler(int mesh_points, double time, int size) {
         delete[] a[i];
     }
     delete [] a;
+
+    return runtime;
 }
 
 /**
@@ -98,11 +95,14 @@ void SolarSystem::forwardEuler(int mesh_points, double time, int size) {
 *              (clarification: if less than size of private
 *               variable planets, Planets at index > size
 *               will not be advanced in the simulation)
-* @return nothing is returned
+* @param beta: exponential factor for radius in force (default=3.0)
+* @return the total runtime of all advance_vv instances is returned
 */
-void SolarSystem::velocityVerlet(int mesh_points, double time, int size) {
+double SolarSystem::velocityVerlet(int mesh_points, double time, int size, double beta) {
     double step = time / ((double) mesh_points);
     double current_time = 0.0;
+    clock_t start, end;
+    double runtime;
 
     std::ofstream output_file(m_fname);
     std::ofstream output_file_E(m_fname_E);
@@ -112,6 +112,7 @@ void SolarSystem::velocityVerlet(int mesh_points, double time, int size) {
     double **a_new = new_matrix(m_planets.size(), m_dimension);
 
     double Fx, Fy, Fz, Fx_new, Fy_new, Fz_new;
+    Fx = Fy = Fz = Fx_new = Fy_new = Fz_new = 0.0;
 
     print_pos(output_file, current_time, size);
     print_energy(output_file_E, current_time);
@@ -121,29 +122,10 @@ void SolarSystem::velocityVerlet(int mesh_points, double time, int size) {
     while (current_time < time) {
         for (int i = 0; i < size; i++) {
             Planet &current = m_planets[i];
-
-            Fx = Fy = Fz = Fx_new = Fy_new = Fz_new = 0.0;
-
-            gravitational_force(current, i, Fx, Fy, Fz);
-
-            a[i][0] = Fx / current.get_M();
-            a[i][1] = Fy / current.get_M();
-            a[i][2] = Fz / current.get_M();
-
-            for (int j = 0; j < m_dimension; j++) {
-                double new_pos = current.get_pos(j) + current.get_v(j)*step + 0.5*step*step*a[i][j];
-                current.set_pos(j, new_pos);
-            }
-
-            gravitational_force(current, i, Fx_new, Fy_new, Fz_new);
-            a_new[i][0] = Fx_new / current.get_M();
-            a_new[i][1] = Fy_new / current.get_M();
-            a_new[i][2] = Fz_new / current.get_M();
-
-            for (int j = 0; j < m_dimension; j++) {
-                double new_vel = current.get_v(j) + 0.5*step*(a_new[i][j] + a[i][j]);
-                current.set_v(j, new_vel);
-            }
+            start = clock();
+            advance_vv(current, i, step, a, a_new, Fx, Fy, Fz, Fx_new, Fy_new, Fz_new, beta);
+            end = clock();
+            runtime += (double)(end - start)/((double)CLOCKS_PER_SEC);
         }
 
         print_pos(output_file, current_time, size);
@@ -162,10 +144,143 @@ void SolarSystem::velocityVerlet(int mesh_points, double time, int size) {
     }
     delete [] a;
     delete [] a_new;
+
+    return runtime;
 }
 
+/**
+* test_velocityVerlet: method for unit testing total energy
+*                      and conservation of angular momentum
+*
+*/
+void SolarSystem::test_velocityVerlet(int mesh_points, double time, int size) {
+    double step = time / ((double) mesh_points);
+    double current_time = 0.0;
+    double energy[2];
+    double momentum[2];
+    double tol = 1e-8;
+
+    double **a = new_matrix(m_planets.size(), m_dimension);
+    double **a_new = new_matrix(m_planets.size(), m_dimension);
+
+    double Fx, Fy, Fz, Fx_new, Fy_new, Fz_new;
+    Fx = Fy = Fz = Fx_new = Fy_new = Fz_new = 0.0;
+
+    kinetic_energy();
+    potential_energy();
+
+    energy[0] = m_planets[0].get_kinetic() + m_planets[0].get_potential();
+
+    m_planets[0].angular_momentum();
+    momentum[0] = m_planets[0].get_angular_momentum(2);
+
+    current_time += step;
+    while (current_time < time) {
+        for (int i = 0; i < size; i++) {
+            Planet &current = m_planets[i];
+            advance_vv(current, i, step, a, a_new, Fx, Fy, Fz, Fx_new, Fy_new, Fz_new);
+        }
+
+        kinetic_energy();
+        potential_energy();
+        energy[1] = m_planets[0].get_kinetic() + m_planets[0].get_potential();
+        if (fabs(energy[0] - energy[1]) > tol) {
+            std::cout << "Energy at time " << current_time << ": " << energy[1] << " not equal to energy at time " << current_time - step <<": " << energy[0] << std::endl;
+            exit(1);
+        }
+
+        m_planets[0].angular_momentum();
+        momentum[1] = m_planets[0].get_angular_momentum(2);
+        if (fabs(momentum[0] - momentum[1]) > tol) {
+            std::cout << "Angular momentum at time " << current_time << ": " << momentum[1] << " not equal to angular momentum at time " << current_time - step <<": " << momentum[0] << std::endl;
+            exit(1);
+        }
+        energy[0] = energy[1];
+        momentum[0] = momentum[1];
+
+        current_time += step;
+    }
+
+    for (int i = 0; i < m_planets.size(); i++) {
+        delete[] a[i];
+        delete[] a_new[i];
+    }
+    delete [] a;
+    delete [] a_new;
+}
 
 // PRIVATE MEMBER FUNCTIONS
+
+/**
+* advance_fe: advances the solar system by one timestep using forward Euler
+*
+* @param current: current planet to advance
+* @param idx: index of current in planets vector
+* @param step: the step length
+* @param a: acceleration matrix
+* @param Fx: force in x-direction
+* @param Fy: force in y-direction
+* @param Fz: force in z-direction
+* @return nothing is returned
+*/
+void SolarSystem::advance_fe(Planet &current, int idx, double step, double **a, double &Fx, double &Fy, double &Fz) {
+    Fx = Fy = Fz = 0.0;
+
+    gravitational_force(current, idx, Fx, Fy, Fz);
+
+    a[idx][0] = Fx / current.get_M();
+    a[idx][1] = Fy / current.get_M();
+    a[idx][2] = Fz / current.get_M();
+
+    for (int j = 0; j < m_dimension; j++) {
+        double new_pos = current.get_pos(j) + step*current.get_v(j);
+        current.set_pos(j, new_pos);
+        double new_vel = current.get_v(j) + step*a[idx][j];
+        current.set_v(j, new_vel);
+    }
+}
+
+/**
+* advance_vv: advances the solar system by one timestep using velocity Verlet
+*
+* @param current: current planet to advance
+* @param idx: index of current in planets vector
+* @param step: the step length
+* @param a: acceleration matrix
+* @param a_new: acceleration matrix next timestep
+* @param Fx: force in x-direction
+* @param Fy: force in y-direction
+* @param Fz: force in z-direction
+* @param Fx_new: force in x-direction next-timestep
+* @param Fy_new: force in y-direction next-timestep
+* @param Fz_new: force in z-direction next-timestep
+* @param beta: exponential factor for radius in force (default=3.0)
+* @return nothing is returned
+*/
+void SolarSystem::advance_vv(Planet &current, int idx, double step, double **a, double **a_new, double &Fx, double &Fy, double &Fz, double &Fx_new, double &Fy_new, double &Fz_new, double beta) {
+    Fx = Fy = Fz = Fx_new = Fy_new = Fz_new = 0.0;
+
+    gravitational_force(current, idx, Fx, Fy, Fz, beta);
+
+    a[idx][0] = Fx / current.get_M();
+    a[idx][1] = Fy / current.get_M();
+    a[idx][2] = Fz / current.get_M();
+
+    for (int j = 0; j < m_dimension; j++) {
+        double new_pos = current.get_pos(j) + current.get_v(j)*step + 0.5*step*step*a[idx][j];
+        current.set_pos(j, new_pos);
+    }
+
+    gravitational_force(current, idx, Fx_new, Fy_new, Fz_new, beta);
+    a_new[idx][0] = Fx_new / current.get_M();
+    a_new[idx][1] = Fy_new / current.get_M();
+    a_new[idx][2] = Fz_new / current.get_M();
+
+    for (int j = 0; j < m_dimension; j++) {
+        double new_vel = current.get_v(j) + 0.5*step*(a_new[idx][j] + a[idx][j]);
+        current.set_v(j, new_vel);
+    }
+}
 
 /**
 * gravitational_force: calculates the gravitational force between one planet and the others
@@ -177,7 +292,7 @@ void SolarSystem::velocityVerlet(int mesh_points, double time, int size) {
 * @param Fz force in z-direction
 * @return values are stores appropriately in Fx, Fy and Fz
 */
-void SolarSystem::gravitational_force(Planet &current, int idx, double &Fx, double &Fy, double &Fz) {
+void SolarSystem::gravitational_force(Planet &current, int idx, double &Fx, double &Fy, double &Fz, double beta) {
     for (int j = 0; j < m_planets.size(); j++) {
         if (j != idx) {
             Planet &other = m_planets[j];
@@ -186,9 +301,9 @@ void SolarSystem::gravitational_force(Planet &current, int idx, double &Fx, doub
                 rel_dist[k] = current.get_pos(k) - other.get_pos(k);
             }
             double r = current.distance(other);
-            Fx += other.get_M()*rel_dist[0]/(r*r*r);
-            Fy += other.get_M()*rel_dist[1]/(r*r*r);
-            Fz += other.get_M()*rel_dist[2]/(r*r*r);
+            Fx += other.get_M()*rel_dist[0]/(pow(r,beta));
+            Fy += other.get_M()*rel_dist[1]/(pow(r,beta));
+            Fz += other.get_M()*rel_dist[2]/(pow(r,beta));
         }
     }
     Fx *= -m_G*current.get_M();
