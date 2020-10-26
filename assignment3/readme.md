@@ -28,3 +28,29 @@ Specific for the plotting is that it is called specifically calling python3.8 wh
 * tests/Makefile
 * report/report.pdf
 
+## Compilation and Execution
+supplied with the repository is a Python script main.py. Running it with the command "Python main.py" results in a promot to enter number of mesh points for the simulation, then a final time. (MAKE SURE the final time is enetered without a period, i.e. as an int).
+The program will then present 13 options:
+
+earth-fe    - Solves Earth-Sun using forward Euler
+earth-vv    - Solved Earth-Sun using velocity Verlet
+ellipse     - Solved Earth-Sun with IC resulting in an ellipse
+beta-3.5-circ   - Modifies beta = 2.5 for circular orbit
+beta-3.9-circ   - Modifies beta = 2.9 for circular orbit
+beta-4.0-circ   - Modifies beta = 3.0 for circular orbit
+beta-4.0-ellipse    - Modifies beta = 3.0 for elliptical orbit
+escape  - Solved Eart-Sun with IC resulting in Earth's escape velocity
+earth-jupiter   - Solves Earth-Jupiter around a static Sun
+earth-10jupiter   - Solves Earth-Jupiter around a static Sun. Jupter has 10 times more mass
+earth-1000jupiter   - Solved Earth-Jupiter around a static Sun. Jupiter has 1000 times more mass
+three-body  - Solves Earth-Sun-Jupiter system
+full-system     - Solved system with all planets in the solar system, and Pluto
+
+## Tests
+Supplied is a directory tests, it contains a Makefile with the options
+* all   - compiles all programs to runnable .out.files
+* test  - compiles unit tests
+* clean - removes all .out files
+
+## Bugs
+
