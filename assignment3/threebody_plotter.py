@@ -12,6 +12,7 @@ if (len(sys.argv) < 3):
 
 outfile: str = sys.argv[1]
 file: str = sys.argv[2]
+names = ["Earth", "Jupiter", "Sun"]
 
 x = [[] for _ in range(3)]
 y = [[] for _ in range(3)]
@@ -25,7 +26,7 @@ with open(file, "r") as infile:
         y[idx].append(float(line[4]))
 
 for i in range(3):
-    plt.plot(x[i], y[i], '--', label=f"Planet {i}")
+    plt.plot(x[i], y[i], '--', label=f"{names[i]}")
 
 plt.xlabel("x [AU]")
 plt.ylabel("y [AU]")

@@ -3,7 +3,7 @@
 *
 * Author: Are Frode Kvanum
 *
-* Completion Date: 22.10.2020
+* Completion Date: 25.10.2020
 */
 
 #ifndef Planet_hpp

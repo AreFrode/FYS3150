@@ -128,6 +128,12 @@ double SolarSystem::velocityVerlet(int mesh_points, double time, int size, doubl
             runtime += (double)(end - start)/((double)CLOCKS_PER_SEC);
         }
 
+        /*
+        for (int i = 0; i < size; i++) {
+            m_planets[i].update_pos();
+            m_planets[i].update_v();
+        }*/
+
         print_pos(output_file, current_time, size);
         print_energy(output_file_E, current_time);
         print_angular(output_file_M, current_time, size);

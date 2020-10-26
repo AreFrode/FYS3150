@@ -66,5 +66,4 @@ if not (prog == "earth-fe"):
 os.system(" ".join(["mv", filename_plot, plot_path]))
 os.system(" ".join(["mv", filename_plot_en, plot_path]))
 
-os.system("rm main.out")
 os.system("echo done.")

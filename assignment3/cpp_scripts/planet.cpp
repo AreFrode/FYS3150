@@ -3,7 +3,7 @@
 *
 * Author: Are Frode Kvanum
 *
-* Completion date: 22.10.2020
+* Completion date: 25.10.2020
 */
 
 #include "planet.hpp"
